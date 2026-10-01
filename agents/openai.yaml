@@ -1,0 +1,14 @@
+interface:
+  display_name: Autoresearch
+  short_description: Generate portable, stepwise research environments
+  default_prompt: Use $autoresearch to set up a research folder for my objective with
+    a custom CLI and durable experiment history.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
