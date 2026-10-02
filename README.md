@@ -1,23 +1,29 @@
-# Autoresearch
+# Autoresearch Scaffold Skill — v2
 
-An agent skill that generates portable, domain-specific research environments.
+Give an agent a research objective and a target folder. This skill teaches it to generate a local research controller using the runtimes and headless agent tools available in that environment. Durable design documents describe the research; a custom CLI advances one explicit stage per `research step`.
 
-Give an agent a research goal and target folder. The skill teaches it to build a local CLI using the runtimes and headless agent tools available in that environment. The resulting controller advances one stage per `research step`, validates artifacts, preserves experiment history, and recovers interrupted work.
+## Use
 
-## Usage
-
-Install this folder as an agent skill using your agent's supported skill installation mechanism, or ask an agent to read `SKILL.md` and its referenced files.
-
-Example request:
+Install this folder using your agent's supported skill installation mechanism, or ask it to read `SKILL.md` and the linked references.
 
 > Use autoresearch to set up research in ./fuzzy-match for the fastest approximate string matcher in JavaScript.
 
-The generated project provides `research describe`, `status`, `step`, `continue`, `history`, `inspect`, `validate`, and `doctor`, plus domain-specific evaluation commands.
+The scaffold selects a small default workflow or a fuller audited workflow, with a documented reason. It defines the correctness oracle and validates the evaluator before research, measures a baseline, records experiment evidence, and gates adoption through controller code. Inconclusive results can request another bounded measurement batch of the same frozen candidate. Session reuse and model costs are explicit choices.
 
-## Design
+## What changed in v2
 
-The lifecycle is hypothesis, build, verify, run, analyze, decide, and update. Each agent role uses a fresh session. The controller owns transitions, measurement records, and candidate promotion. Verification rejection returns to a later build step. JSONL events and versioned artifacts preserve state independently of implementation language.
+Scientific readiness now includes independently justified oracle cases and deliberately defective candidates. Measurement guidance covers paired/interleaved benchmarks, warmup, independent observation units, noise pilots, uncertainty, repeated selection and protected confirmation. Budgets cover calls, time and available token/spend telemetry, with confirmation reserved before more exploration.
 
-The skill contains architectural contracts rather than a prebuilt universal runtime. Generated implementations require conformance tests and genuine scientific fixtures before research execution. Agent prompts and working directories are not security sandboxes.
+The role pipeline is configurable. JSON drives decisions; factual Markdown is rendered from it. Immutable artifacts are prepared before the journal completion record commits a change. Candidate pointers and summaries are derived views, so interrupted publication has one authority.
 
-See `references/` for runtime semantics, research schemas, backend adapters, and connections to Design Docs Are All You Need and Dream-RSI.
+## Conformance
+
+The skill includes a precise replay protocol, golden event logs, expected states, malformed examples, and a Python standard-library reference reducer/checker. See `references/protocol.md` for exact invocation and the fixture manifest. Generated runtimes must check their own replay implementation against the fixtures and separately test filesystem/process recovery.
+
+Passing protocol fixtures does not validate an evaluator, prove OS isolation, or establish scientific improvement. Real domain controls and confirmation remain separate requirements. A reference reducer is not a universal research runtime.
+
+See `references/agent-adapters.md` for backend capability discovery and session tradeoffs, `references/research-contract.md` for scientific and budget policies, and `references/foundations.md` for source attribution and limits.
+
+## Reproducible validation
+
+Run `python3 scripts/check_conformance.py` for the 25 replay vectors. Run `python3 examples/sum-of-squares/test_demo.py` for the bounded real evaluator and seven integration checks. See the example README for scope and limitations.

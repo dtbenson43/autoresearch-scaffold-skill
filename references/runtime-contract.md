@@ -1,49 +1,42 @@
-# Runtime contract
+# Runtime architecture and configurable workflow
 
-## State semantics
+Read protocol.md for the exact event envelope, legal operations and reducer projection. Its fixtures constrain shared replay semantics. Domain validators and workflow plans extend those semantics; a legal log is not proof of valid science.
 
-Use this stage order; each invocation attempts only the next eligible stage:
+## Profiles
 
-| Stage | Worker | Required outcome | Next |
-| --- | --- | --- | --- |
-| HYPOTHESIS | planner | hypothesis.md and hypothesis.json | BUILD |
-| BUILD | builder | experiment.md, experiment.json, workspace snapshot | VERIFY |
-| VERIFY | auditor | verification.md and verification.json | RUN if approved; BUILD if rejected |
-| RUN | controller evaluator | raw observations and results.json | ANALYZE |
-| ANALYZE | analyst | analysis.md and analysis.json | DECIDE |
-| DECIDE | selector | decision.md and decision.json | UPDATE |
-| UPDATE | historian + controller | history proposal, validated RESULTS.md update and optional promotion | READY |
+Minimal default: BUILD combines proposal/implementation, MEASURE runs a fixed evaluator, DECIDE computes eligibility and records a disposition. Add a declared CONFIRM stage before adoption when scientifically required. A deterministic record operation need not call an agent. Audited profile: HYPOTHESIS, BUILD, VERIFY, MEASURE, ANALYZE, DECIDE, CONFIRM, RECORD, with configured edges for rejected audits and inconclusive measurements. These are examples, not mandatory role counts.
 
-Initial state and READY select HYPOTHESIS. Allocate the experiment ID and immutable parent-candidate snapshot within that stage's transaction, so retry reuses the same ID. READY is the outcome of UPDATE, not a hidden extra agent call. Check stop conditions before opening another experiment. UPDATE has one historian session; deterministic import and promotion are controller operations, not extra agent roles. Do not call promotion a proven scientific improvement solely because a selector says adopt.
+Persist the workflow graph, stage type (worker/evaluator/controller), inputs, outputs, validators, allowed result-to-next-stage mapping and session policy before starting experiments. A worker's suggested next stage is never authority; controller code chooses from validated outcomes. One step attempts exactly one configured stage, then exits. Recovery bookkeeping and new-experiment allocation can precede that stage; they must not secretly execute additional stages.
 
-Persist build revision numbers. A rejected verification completes the verification stage but does not authorize RUN. Bind approved verification to exact workspace, plan, evaluator, fixture and contract hashes; rebuilding invalidates prior approval. Exhausted repair budgets produce a blocked/terminal experiment, never permission to run invalid work. Explicitly record closure before starting another experiment.
+Separate initialization from experimentation. Initialize only after baseline/oracle readiness checks, or explicitly mark a test project mock. Check budgets/readiness before opening a new experiment. Define how failed/blocked experiments are closed, and retain unsuccessful attempts. No implicit adoption on exhaustion. Log structured IDs separately from human-readable slugs.
 
-## Event schema and replay
+## Publication: journal is authority
 
-Use UTF-8 JSONL, one controller event per line, with fields:
+Use a project-wide single-writer lock across replay, attempt, artifact publication and commit. The controller owns journal, canonical artifacts and candidate views. Use OS locking or atomic acquisition with owner identity; do not steal a live owner's lock just because it is old. Stop child processes before releasing ownership after failure. Bound each invocation; preserve separate stdout/stderr logs.
 
-```json
-{"schemaVersion":1,"seq":12,"id":"event-unique","previousId":"event-11","timestamp":"2026-10-01T13:00:00Z","researchId":"research-unique","experimentId":"007","stage":"BUILD","attemptId":"attempt-unique","attempt":2,"buildRevision":2,"type":"completed","contractHash":"sha256:...","artifacts":[{"path":"experiments/007/attempts/BUILD-2/experiment.json","sha256":"..."}],"outcome":{"nextStage":"VERIFY"}}
-```
+Before appending a completed event: validate stage outputs, publish immutable artifacts/manifests under safe paths, flush files and containing directories where supported, verify their hashes, and recheck incumbent/evidence/budget gates. Then append the complete newline-terminated event and durably flush the journal. That completed record is the logical commit point. Only after it may current-candidate pointers and RESULTS.md be refreshed. The journal's durability depends on the filesystem/platform; document and test actual guarantees rather than promising identical power-loss behavior everywhere.
 
-Define started, completed, failed, interrupted, blocked, stopped, and recovery events in RUNTIME.md. Link each terminal attempt event to exactly one started event. Enforce monotonic sequence, unique IDs, legal transitions, matching experiment/attempt IDs, contract versions, and required hashes. Reject out-of-order or duplicate completions. A completion must contain a validated stage-specific outcome; arbitrary `nextStage` text is not authority. Replay the whole log through the transition reducer. Derived state caches are disposable and cannot override the log.
+| Interruption point | Recovery |
+| --- | --- |
+| Before completed record | Previous committed state wins; orphan artifacts never imply success; reconcile/interrupt the pending attempt and retry under budget |
+| Complete committed record, stale pointer or summary | Replay adopts the committed state; rebuild views idempotently without rerunning the agent or evaluation |
+| Unterminated final record | Treat as uncommitted even if its JSON parses; preserve bytes before explicit locked tail repair |
+| Invalid complete record or middle corruption | Fail closed; no silent skipping or automatic scientific advancement |
 
-Write started before invoking work; write completed only after validated artifacts have been atomically published and flushed. Record backend errors/timeouts as failed, keeping the state eligible for a bounded retry. Keep stdout/stderr in logs/<experiment>/<stage>/<attempt>/, not mixed into JSONL. Preserve attempt artifacts, including rejected builds and failed output. A result of zero or missing metric is not a generic success.
+Read-only status reports journal-derived state, pending attempt and stale views without changing files. `step` or explicit recovery may rebuild views. After a write/flush error, fail uncertain and reconcile the existing journal before another append; never append a contradictory failed event blindly after a potentially committed completion. The protocol reader rejects an unterminated tail; it does not itself repair files.
 
-Treat only a final unterminated partial record as a possible torn append. Preserve its bytes in a recovery artifact before truncating to the last verified boundary under the lock; append a recovery event describing the repair. Fail closed for invalid newline-terminated JSON, schema violations, or corruption in the middle. Do not quietly skip bad records. Hashes detect accidental changes; they do not provide authenticity against a process that can rewrite the entire log.
+Use immutable artifact references in events. Before resuming after a crash, check their existence and hashes. A completed event with missing evidence is an integrity error, not permission to rerun and overwrite it. Record operator recovery explicitly. Repeated retries may repeat subprocess side effects: require idempotent evaluators or explicit reconciliation for effects outside the project.
 
-## Single writer and recovery
+## Revisions and invalidation
 
-Hold a project-wide exclusive controller lock across replay, work, publication and completion. Use an OS lock or atomic lock acquisition with owner identity and documented stale recovery. Never steal a lock merely because it is old while the owner may still be alive. A second invocation returns busy without launching an agent. Account for child process termination before releasing a failed attempt's lock.
+Use the protocol's exact build revision rules. A build attempt gets a new revision; failed attempts are not reused. Freeze candidate, plan and evaluator references before measurement. A repair invalidates all downstream approval/results tied to the old revision; additional measurement batches keep the revision unchanged. Retain old artifacts rather than overwriting them. Contract/evaluator changes require a new cohort and baseline evidence, not merely another candidate revision.
 
-Use an attempt-specific staging directory and subprocess timeouts. Avoid shell interpolation; spawn executable plus argument array. Bound wall time, stage attempts, verification repairs, experiment count, and backend usage where measurable. Include explicit exit codes for success, busy, stopped, blocked, and failed so a loop cannot spin forever on stop. Document them; use nonzero stop with a machine-readable reason if supporting `while research step`.
+Promotion requires a controller-computed eligible decision for the exact revision, required confirmation evidence, current-parent match and real-mode provenance for real projects. A mock project may simulate promotion only within its own isolated namespace. The protocol checks configured promotion outcomes, completed-build state, mode and lineage; domain code independently recomputes the gates from immutable evidence. Never trust a worker-supplied eligibility boolean.
 
-A started event without a terminal event is interrupted, not completed. After acquiring the lock, reconcile staged outputs and committed manifests. Do not infer success just from a file's existence. Retry with a new attempt ID unless a validated durable transaction manifest proves the previous operation committed. Record interrupted work before retry; keep earlier outputs. Do not promise exactly-once external subprocess effects. Make evaluator retry safe or block for explicit recovery if it has irreversible side effects.
+## Interfaces and compatibility
 
-## Publication and candidate promotion
+Expose describe, status, step, continue, history, inspect, validate and doctor; add domain-specific commands and initialization/recovery commands as needed. Read-only replay accepts a JSONL file and produces the protocol projection for fixture checks. Commands resolve project-relative paths independently of cwd. Spawn executable/argument arrays without shell interpolation. Reject unexpected output files, path escapes and unsafe imports.
 
-Store each candidate as an immutable content-addressed revision, with a manifest and scientific evaluation provenance. Keep a controller-owned atomic current-candidate pointer. Record parent revision, proposal hash, contract/fixture/evaluator hashes and decision provenance. Permit branching from an explicit historical parent, but promotion must compare against the current revision and cannot silently overwrite a newer winner.
+Document exit codes distinguishing success, stopped, blocked, busy and failed. If supporting `while research step`, stop must terminate the loop rather than spin. Emit structured status on stdout and diagnostics on stderr. Respect per-stage and overall budgets, including retries and confirmation reservations.
 
-For UPDATE, stage the history summary and candidate revision, validate deterministic constraints and references, then persist a transaction manifest before replacing pointers/RESULTS.md. Reconcile interrupted commits using that manifest and hashes, and only then append completion. Re-running UPDATE must not create duplicate history entries or repeat promotion. Preserve the previous pointer/history for recovery. If local filesystem semantics cannot safely implement this protocol, choose a transactional store or an explicitly documented compatible commit mechanism.
-
-Never let an agent copy arbitrary workspace files into the canonical candidate. Import only the declared candidate interface, reject path traversal/symlinks escaping the staging root, and re-evaluate the exact imported revision when required. Store adoption evidence independently of agent prose. A deterministic gate can veto adopt when constraints fail, uncertainty is excessive, provenance is stale, or budgets prohibit final verification.
+Copy the protocol version and conformance fixtures into generated projects. Run the checker against each generated implementation. Also test lock contention, timeouts, crash injection before/after commit, artifact integrity, budget persistence, mock isolation, invocation from another cwd and status nonmutation. Fixtures cover semantic replay; integration tests cover mechanisms. Preserve old schema readers or perform explicit backup-preserving migrations with replay equivalence checks. Do not label a changed schema with the old version.

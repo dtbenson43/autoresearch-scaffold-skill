@@ -1,0 +1,21 @@
+{
+  "passed": 7,
+  "checks": [
+    "read-only status and invocation from other cwd",
+    "one stage per call, wrong candidate rejected, genuine measurements and separate confirmation, bounded stop",
+    "single-writer lock contention",
+    "persisted evaluator reservation cap blocks another invocation",
+    "before/after completion interruption, recovery, no rerun of committed build",
+    "committed decision recovered without repeating measurement or decision",
+    "isolated synthetic inconclusive/re-measure replay"
+  ],
+  "real_decision": "accept",
+  "exploration_ratio_range": [
+    0.009221695947753121,
+    0.036490031631520606
+  ],
+  "confirmation_ratio_range": [
+    0.012834415717763906,
+    0.013117344578018735
+  ]
+}

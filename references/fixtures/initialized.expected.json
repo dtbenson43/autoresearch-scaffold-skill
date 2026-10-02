@@ -1,0 +1,36 @@
+{
+  "attemptIds": [],
+  "currentCandidate": {
+    "id": "baseline",
+    "mode": "real"
+  },
+  "eventIds": [
+    "e1"
+  ],
+  "experiment": null,
+  "experimentIds": [],
+  "history": [],
+  "schemaVersion": 2,
+  "seq": 1,
+  "workflow": {
+    "buildStage": "build",
+    "edges": {
+      "build": {
+        "built": "verify"
+      },
+      "measure": {
+        "accept": null,
+        "inconclusive": "measure",
+        "reject": null
+      },
+      "verify": {
+        "pass": "measure",
+        "reject": "build"
+      }
+    },
+    "initialStage": "build",
+    "promotionOutcomes": [
+      "accept"
+    ]
+  }
+}

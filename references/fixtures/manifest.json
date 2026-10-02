@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 2,
+  "cases": [
+    {
+      "name": "initialized",
+      "log": "initialized.jsonl",
+      "accept": true,
+      "expected": "initialized.expected.json"
+    },
+    {
+      "name": "successful_promotion",
+      "log": "successful_promotion.jsonl",
+      "accept": true,
+      "expected": "successful_promotion.expected.json"
+    },
+    {
+      "name": "promotion_before_close",
+      "log": "promotion_before_close.jsonl",
+      "accept": true,
+      "expected": "promotion_before_close.expected.json"
+    },
+    {
+      "name": "reject_repair",
+      "log": "reject_repair.jsonl",
+      "accept": true,
+      "expected": "reject_repair.expected.json"
+    },
+    {
+      "name": "inconclusive_remeasure",
+      "log": "inconclusive_remeasure.jsonl",
+      "accept": true,
+      "expected": "inconclusive_remeasure.expected.json"
+    },
+    {
+      "name": "failure_recovery",
+      "log": "failure_recovery.jsonl",
+      "accept": true,
+      "expected": "failure_recovery.expected.json"
+    },
+    {
+      "name": "interruption_recovery",
+      "log": "interruption_recovery.jsonl",
+      "accept": true,
+      "expected": "interruption_recovery.expected.json"
+    },
+    {
+      "name": "active_attempt",
+      "log": "active_attempt.jsonl",
+      "accept": true,
+      "expected": "active_attempt.expected.json"
+    },
+    {
+      "name": "stale_parent",
+      "log": "stale_parent.jsonl",
+      "accept": false
+    },
+    {
+      "name": "invalid_order",
+      "log": "invalid_order.jsonl",
+      "accept": false
+    },
+    {
+      "name": "illegal_edge",
+      "log": "illegal_edge.jsonl",
+      "accept": false
+    },
+    {
+      "name": "wrong_revision",
+      "log": "wrong_revision.jsonl",
+      "accept": false
+    },
+    {
+      "name": "duplicate_attempt",
+      "log": "duplicate_attempt.jsonl",
+      "accept": false
+    },
+    {
+      "name": "premature_close",
+      "log": "premature_close.jsonl",
+      "accept": false
+    },
+    {
+      "name": "mock_promotion",
+      "log": "mock_promotion.jsonl",
+      "accept": false
+    },
+    {
+      "name": "duplicate_event",
+      "log": "duplicate_event.jsonl",
+      "accept": false
+    },
+    {
+      "name": "invalid_sequence",
+      "log": "invalid_sequence.jsonl",
+      "accept": false
+    },
+    {
+      "name": "torn_json_tail",
+      "log": "torn_json_tail.jsonl",
+      "accept": false
+    },
+    {
+      "name": "missing_final_newline",
+      "log": "missing_final_newline.jsonl",
+      "accept": false
+    },
+    {
+      "name": "malformed_complete_line",
+      "log": "malformed_complete_line.jsonl",
+      "accept": false
+    },
+    {
+      "name": "duplicate_json_key",
+      "log": "duplicate_json_key.jsonl",
+      "accept": false
+    },
+    {
+      "name": "mock_to_mock_promotion",
+      "log": "mock_to_mock_promotion.jsonl",
+      "accept": true,
+      "expected": "mock_to_mock_promotion.expected.json"
+    },
+    {
+      "name": "unknown_fields",
+      "log": "unknown_fields.jsonl",
+      "accept": false
+    },
+    {
+      "name": "unsupported_version",
+      "log": "unsupported_version.jsonl",
+      "accept": false
+    },
+    {
+      "name": "failed_build_promote",
+      "log": "failed_build_promote.jsonl",
+      "accept": false
+    }
+  ]
+}

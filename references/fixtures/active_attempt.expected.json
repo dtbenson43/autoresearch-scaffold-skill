@@ -1,0 +1,54 @@
+{
+  "attemptIds": [
+    "a1"
+  ],
+  "currentCandidate": {
+    "id": "baseline",
+    "mode": "real"
+  },
+  "eventIds": [
+    "e1",
+    "e2",
+    "e3"
+  ],
+  "experiment": {
+    "activeAttempt": "a1",
+    "artifacts": [],
+    "buildRevision": 1,
+    "builtRevision": null,
+    "candidateId": "c1",
+    "experimentId": "x1",
+    "lastOutcome": null,
+    "mode": "real",
+    "parentId": "baseline",
+    "promoted": false,
+    "stage": "build"
+  },
+  "experimentIds": [
+    "x1"
+  ],
+  "history": [],
+  "schemaVersion": 2,
+  "seq": 3,
+  "workflow": {
+    "buildStage": "build",
+    "edges": {
+      "build": {
+        "built": "verify"
+      },
+      "measure": {
+        "accept": null,
+        "inconclusive": "measure",
+        "reject": null
+      },
+      "verify": {
+        "pass": "measure",
+        "reject": "build"
+      }
+    },
+    "initialStage": "build",
+    "promotionOutcomes": [
+      "accept"
+    ]
+  }
+}

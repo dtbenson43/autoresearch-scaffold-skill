@@ -1,34 +1,57 @@
-# Research and artifact contracts
+# Scientific, measurement and budget contract
 
-## Specify an executable scientific question
+## Oracle and initialization
 
-Define candidate input/output interfaces, units, primary metric and direction, hard constraints, baseline, data provenance, workload distribution, seeds, replication, aggregation, uncertainty, minimum worthwhile improvement, tie handling, resource limits and stopping rules. Separate exploration fixtures from held-out confirmation where feasible. State whether setup/training/index construction counts toward cost. Freeze evaluator and fixture hashes for an experiment. Changing the research contract creates a version boundary; do not rank incomparable measurements as if they share a benchmark.
+Specify the function being optimized, candidate interface, valid inputs/outputs, workload and constraints before choosing a search strategy. Record how expected answers are established independently of the candidate. Suitable sources include manually adjudicated labels, proven definitions with a separate reference implementation, trusted external measurements, or exhaustive enumeration on a bounded domain. A reference can be buggy: cross-check hand-worked edge cases and properties. A baseline's outputs alone establish compatibility, not truth. For inherently subjective tasks, define a blinded rating procedure and uncertainty rather than claiming objective correctness.
 
-For fuzzy matching, define whether this is edit-distance computation, threshold search, nearest-neighbor retrieval, or ranking. Specify Unicode normalization, string length distribution, corpus sizes, similarity definition, expected answers, recall/precision or exactness constraints, indexing amortization, warmup and memory limits. A fast trigram retriever and a distance calculator are not interchangeable interfaces.
+Before the first experiment, record an initialization report with oracle provenance, fixture hashes/split policy, evaluator version, successful known-correct cases and failures of deliberately defective candidates. Include plausible defects: constant outputs, dropped edge cases, wrong normalization, label access, or shortcuts that change the specified task. Some leakage defenses require isolation or inspection rather than output tests. Freeze evaluator and scoring rules after validation. Changing them starts a new comparison cohort and requires remeasuring the incumbent.
 
-For OCR extraction, define field schema, missing/null handling, normalization, document-level splits, provenance/line references, per-field accuracy and unacceptable error classes. Do not fabricate genuine labels or allow a candidate to read answers during inference. For simulation optimization, define initial conditions, seeds, fixed opponents/environment versions, success criteria and repeat counts.
+Construct or import a baseline through an explicit setup operation with its own provenance. Test correctness before measuring speed. If no baseline exists, record baseline construction as setup rather than a discovery. Empty fixtures, unavailable authentic labels or unverified backends block scientific-ready status. Synthetic examples can test logic; they cannot establish real-world extraction accuracy.
 
-## Artifact schemas
+## Measurement plan
 
-Generate actual JSON schemas or equally strict native validators; these field lists are requirements, not sufficient code validators. Validate types, enums, bounds, required fields, paths and referential integrity. Reject non-finite numeric values, omitted measurements and inconsistent Markdown/JSON claims. Markdown provides reasoning; JSON drives control. If they conflict, block the stage.
+Record primary metric/direction/units, hard constraints, minimum useful effect, observation unit, nuisance variables, seeds, replication, aggregation, uncertainty method, stopping rules, setup costs and confirmation budget. Distinguish repeated timing samples of one input from independent examples or independent process runs. More inner-loop iterations do not create more independent evidence.
 
-| Artifact | Required content |
+| Domain | Minimum methodological choices |
 | --- | --- |
-| meta.json | experiment ID, parent candidate/research node, creation time, contract version/hash, selected exploration policy version, workspace manifest |
-| hypothesis.json / .md | falsifiable claim, rationale, predicted metric changes, control comparison, mechanism, failure criterion, historical references |
-| experiment.json / .md | independent variable, controls, data/splits, evaluator command ID, seeds/repeats, expected outputs, resource budget, candidate interface |
-| verification.json / .md | approved/rejected enum, audited input hashes, issues with severity/evidence, scope and limitations |
-| results.json | validity, candidate/baseline hashes, contract and evaluator provenance, raw observation references, repetitions, metrics with units, uncertainty, constraint checks, resource usage |
-| analysis.json / .md | supported/unsupported/inconclusive claim outcome, measured effects, uncertainty, threats to validity, follow-up proposals |
-| decision.json / .md | adopt/reject/inconclusive enum, evidence refs, parent/current revision, constraints, reason, proposed candidate manifest |
-| history proposal | experiment ID, disposition, concise findings, cited artifact paths, current-best evidence, promising/failed/unexplored directions |
+| Function benchmark | Correctness first; warmup policy for JIT/caches, timer resolution, sufficiently long timed blocks, output consumption to prevent dead-work artifacts, interleaved/randomized paired baseline/candidate blocks, startup/index-build accounting, representative size distributions, fresh-process repeats where appropriate |
+| OCR/prompt extraction | Authentic adjudicated labels, explicit missing/null and normalization rules, document/group splits to prevent template/person leakage, per-field and document metrics, provenance evidence, unacceptable-error constraints, fixed model/preprocessor/inference settings |
+| Simulation | Frozen environment/opponents, independent seeds, paired seed comparisons where appropriate, distribution of outcomes and failure rates, fixed horizon and termination rules |
 
-Auditor rejection is a normal result. A malformed auditor output is a failed stage. Require machine-readable approval plus audited hashes before execution. Analyst and selector cannot change measurement files. The controller computes comparable metric aggregates and constraint gates; agents interpret them.
+Estimate measurement variation with a bounded baseline-versus-baseline pilot. Use it to choose measurement duration and a fixed sample plan or a justified sequential procedure. There is no universal run count. State the assumptions behind confidence intervals and power/sample-size estimates. For paired observations use paired differences or ratios; bootstrap at the independent unit, not at arbitrary inner-loop iterations. If there are too few independent units or violations of assumptions, report limited evidence rather than manufactured precision.
 
-## Dependencies and history
+Choose a primary statistic before inspecting candidate outcomes. Treat ties and below-useful-threshold effects explicitly. Account for repeated candidate selection: exploration identifies promising changes, not confirmed winners. Reserve an untouched confirmation set or fresh confirmation runs; apply a declared familywise/false-discovery or sequential policy when making repeated inferential claims. Repeatedly checking the same holdout and changing candidates in response makes it exploration data. Track exposure and refresh/retire it as declared.
 
-Declare exact stage inputs, outputs and validators in configuration. Pass a manifest of available documents to workers. Keep contexts bounded by retrieving relevant history, with links back to full records rather than replacing records with summaries. Preserve all explored branches, failed approaches, verifier issues, proposal rationale, snapshots, measurements, costs and decisions. Record search-parent relationships separately from chronology and event-log predecessors.
+Inconclusive results may trigger another batch only under a predeclared maximum and inference procedure. Do not repeatedly compute ordinary fixed-sample intervals and stop on the first favorable result. A simple safe default is fixed exploratory measurement plus one separately scheduled fixed-size confirmation of the selected candidate. If budget cannot resolve the effect, retain the incumbent and close as inconclusive.
 
-Make RESULTS.md a derived human-readable research memory with stable experiment links, provenance, current best, promising directions, failures and unknowns. Preserve prior versions and regenerate from canonical records if needed. Never use a summary as the sole measurement record.
+## Scientific outcomes and invalidation
 
-If exploration-policy improvement is requested later, keep policy code/version separate from candidate code, evaluator and agent backend. Replay only stored branches with known outcomes. Hide outcomes until the replay policy selects a branch; charge historical costs and apply the same action interface. Use held-out discovery trees or prospective runs for confirmation. Unknown branches have unknown scores; history cannot predict experiments never performed. Label ordinary history-informed planning as such rather than claiming Dream-RSI reproduction.
+| Outcome | Action | Evidence retained/invalidation |
+| --- | --- | --- |
+| Incorrect implementation | BUILD a new revision or reject | Retain failing cases; invalidate candidate-dependent approval and measurements |
+| Invalid design | Repair plan/evaluator through controlled revision | Retain audit; invalidate affected observations; evaluator changes require a new cohort and incumbent remeasurement |
+| Inconclusive | MEASURE same frozen revision or close | Preserve all valid batches; follow predeclared stopping policy |
+| Supported improvement | CONFIRM if required, then deterministic adoption gate | Confirm exact evaluated snapshot and constraints |
+| No useful improvement | Close rejected | Preserve measurements and reasons |
+
+An infrastructure timeout is a failed attempt, not a scientific failure or a zero score. Auditor rejection is a valid audit result, not a malformed output. Invalid measurements are excluded only by predeclared rules, with their raw data and exclusion reason retained.
+
+## Evaluated unit and hashes
+
+Record candidate source/data, dependency lockfiles or exact dependency versions, launch arguments, preprocessing, relevant environment settings, runtime/model identity and inference parameters, evaluator and fixtures. Hash a manifest of declared files with normalized relative POSIX paths sorted by path and SHA-256 of exact bytes. Reject escaped paths and symlinks outside the allowed root. Exclude logs, timestamps, generated views and the manifest's own digest. Serialize hash manifests with a documented canonical encoding; avoid float ambiguity by using strings for decimal configuration values. Hash the evaluation contract separately from mutable budget counters and derived state.
+
+Record hardware/runtime/backend identity even when it cannot be snapshotted; label the reproducibility limit. Matching file hashes do not prove an external service or nondeterministic model behaves identically. Measurements must bind to the full evaluated unit, including the baseline and environment cohort. Validate the exact candidate import before promotion; if import changes evaluated bytes or dependencies, re-evaluate.
+
+## Artifacts and deterministic gates
+
+Generate strict JSON schemas/native validators for initialization, proposal, plan, audit where used, results, decision and publication. Required shared fields: experiment ID, parent revision, build revision, contract/evaluator/fixture/environment references, candidate snapshot, artifact hashes, mode (mock/real), invocation/session IDs and costs. Results include raw-observation references, sample units/counts, statistics, uncertainty, exclusions, constraint checks and measurement batch ID. Decisions reference evidence and encode adopt/reject/inconclusive, not agent confidence as a substitute for measurement.
+
+Controller code computes metric aggregates, correctness/constraint checks and eligibility. Agents can propose interpretations and recommend decisions; they cannot fabricate measurement fields or override a failed gate. Confirmation must be an independent evaluator invocation with protected inputs as declared; a different language-model session alone does not establish independence.
+
+Render factual Markdown tables/summaries from JSON. Keep rationale separate. A machine validator checks types, finite values, units, hashes and cross-references; semantic prose review is advisory unless an explicit review stage is configured. Keep full attempt history and parent relationships. RESULTS.md is a disposable view, never the sole evidence record.
+
+## Cost and stopping policy
+
+Set limits for wall time, experiments, build repairs, measurement batches, agent calls, tokens and monetary spend where measurable. Declare model/provider price assumptions and distinguish actual, estimated and unknown costs. Unknown is never zero. Where token/spend telemetry is unavailable, enforce hard call/time limits and disclose that a dollar cap cannot be guaranteed. Do not invent current prices.
+
+Estimate total cost as initialization + expected experiments × (role calls + repairs + measurement batches) + reserved confirmation. Before admitting an operation reserve its configured worst-case or conservative bounded cost; reconcile actual usage afterward. Persist reservations/usage before another invocation can spend the same allocation. Charge interrupted work conservatively until reconciled. Use backend token/time limits when supported. Do not launch if remaining budget cannot cover mandatory confirmation. On exhaustion commit a stopped/blocked outcome, retain the incumbent and provide the reason; an operator may explicitly revise the budget.

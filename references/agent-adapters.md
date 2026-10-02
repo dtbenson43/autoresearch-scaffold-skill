@@ -1,37 +1,25 @@
-# Headless agent adapters and role isolation
+# Agent adapters, session policy and authority
 
-## Discover instead of guessing
+## Capability discovery
 
-Inspect each available executable's help/version and, when necessary, current official documentation. Verify noninteractive mode, prompt input, structured output, session creation, tool permission controls, cwd, timeout and exit behavior. Treat Codex, Cline, and GitHub Copilot as possible backends, not guaranteed commands. Do not hardcode speculative flags or assume similarly named tools share interfaces. Store executable, argument templates and capability evidence in environment/config records; do not store credentials.
+Inspect actual executable help/version and current official docs where necessary. Verify noninteractive prompts, structured output, cwd, sessions, permissions, timeout and exit behavior. Codex, Cline and GitHub Copilot are possible backends, not assumed commands. Store executable plus argument arrays and verified capabilities, never credentials or speculative flags.
 
-Generate a small adapter interface:
+Use an adapter taking role/stage, attempt ID, input manifest, output directory, time/token limits, permissions and session policy. Return exit status, output manifest, separate stdout/stderr paths, session identity and actual/estimated/unknown usage. Distinguish timeout, signal, invalid output and process failure. Never parse narrative stdout as a state event.
 
-```text
-invoke(role, attemptId, inputManifest, outputDirectory, timeout, permissions)
- -> exitCode, stdoutLog, stderrLog, outputManifest, usageIfAvailable
-```
+## Sessions are a choice
 
-Use new sessions for every invocation, including retries. Disable session resumption and implicit conversational memory where supported. Resolve prompt files via explicit arguments/stdin safely. Capture nonzero exits, signals, timeout, invalid JSON and missing outputs distinctly. Do not parse narrative stdout as a completion event.
+| Policy | Benefit | Cost/risk | Appropriate use |
+| --- | --- | --- | --- |
+| Fresh per invocation | Explicit bounded context and reproducible input manifest | Repeated context/token cost; loses repair continuity | Independent audit, compact planning, unrelated experiments |
+| Persistent builder within experiment | Efficient iterative repair and retained local understanding | Stale assumptions/context; larger session; contamination across revisions | Multiple implementation repairs with explicit refreshed contracts and audits |
+| Deterministic controller, no model call | Cheap consistent measurement/decision/history rendering | Requires explicit rules | Evaluator execution, metric aggregation, adoption gates, factual summaries |
 
-## Role authority
+Default to fresh sessions for an independent auditor where one exists. Builders may reuse sessions within one experiment when the backend supports verified resumption. Never share builder context with an allegedly independent auditor or leak protected confirmation answers through prompts/history. Record session identity, reuse, provided artifacts, backend/model version and limits. Refresh inputs after repair and invalidate downstream evidence; reusing context does not reuse approval. Fresh sessions reduce shared conversational context but do not guarantee epistemic independence.
 
-| Role | Reads | May propose/write |
-| --- | --- | --- |
-| Planner | objective, candidate summary, relevant history | current hypothesis |
-| Builder | hypothesis, evaluation contract, parent snapshot, prior audit | experiment plan and experimental workspace |
-| Auditor | hypothesis, plan, workspace, fixed evaluation contract | verification output only |
-| Analyst | hypothesis, plan, audit, measured results | analysis only |
-| Selector | analysis, measurements, incumbent evidence, history | decision only |
-| Historian | finalized experiment and history | history proposal only |
+## Authority
 
-Auditors diagnose without repairing; route rejection back to a separate builder call. RUN belongs to the fixed controller evaluator, not an agent allowed to rewrite the benchmark. No worker appends events, edits controller config/runtime, overwrites canonical results, or promotes candidates.
+Workers propose candidate/plan/rationale artifacts inside their declared outputs. Auditors, if configured, diagnose without repairing in that same invocation. Analysts interpret immutable observations. The fixed evaluator produces measurements; controller code aggregates and gates them. Only the controller appends events, commits promotion, or refreshes canonical history. Combined planning/building or analysis/recommendation is allowed in a declared stage; measurement authority remains separate.
 
-## Enforce what is claimed
+Tool allowlists, path controls and OS isolation are distinct. Prompts and cwd are not a sandbox. Configure supported restrictions, or use a disposable workspace plus controller-mediated validated import. Without an OS boundary, acknowledge same-user processes may still access the host. Fail closed when mandatory restrictions cannot be enforced; do not broaden permissions automatically to get past an error. Apply an appropriate candidate execution boundary and time/resource limits; keep answer keys and controller state out of candidate access.
 
-Tool allowlists restrict tool types; they may not restrict target paths. Read-only tools may still expose unintended files. Cwd is not isolation. A prompt is not access control. Record separately which permissions are backend-enforced, OS-enforced, or only advisory.
-
-Where adequate path controls exist, configure them per role. Otherwise copy permitted inputs into a disposable worker workspace, run with an available OS/container boundary if applicable, and import only validated declared outputs. Without an OS boundary, disclose that same-user subprocesses may access the host despite controller-mediated import. Fail closed if the user's mandatory security restrictions cannot be enforced. Never automatically broaden permissions or use an allow-all flag to bypass a backend error.
-
-Verifier outputs can be collected via structured stdout or a dedicated output directory even if source inputs are read-only. If shell access is needed for inspection, restrict it using supported controls and execution budgets. The domain candidate may also be executable untrusted code: apply a suitable runner boundary, timeout and input/output interface, and keep evaluator answers/controller state outside its allowed access.
-
-Provide a deterministic mock adapter with fixture responses for lifecycle verification. Mock mode must identify itself in events/results, use a separate test research ID and never promote to a real project's incumbent. Do not leave mock mode silently active in a scientifically ready scaffold.
+Mock adapters must identify mock provenance in all outputs, use a separate project namespace and never promote real incumbents. Mock measurements test control flow only. Verify a real backend with a bounded invocation when available and authorized; otherwise report integration unverified. Record failures and preserve attempts rather than silently switching provider/model and combining incomparable runs.

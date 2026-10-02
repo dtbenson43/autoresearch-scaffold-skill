@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 2,
+  "backend": {
+    "available": false,
+    "reason": "No verified paid agent CLI; fixture import only",
+    "agentCalls": 0
+  },
+  "maxExperiments": 2,
+  "maxAttempts": 12,
+  "timeoutSeconds": 15,
+  "workflow": {
+    "initialStage": "build",
+    "buildStage": "build",
+    "edges": {
+      "build": {
+        "built": "measure"
+      },
+      "measure": {
+        "measured": "confirm",
+        "incorrect": "decide"
+      },
+      "confirm": {
+        "confirmed": "decide"
+      },
+      "decide": {
+        "accept": null,
+        "reject": null,
+        "inconclusive": null
+      }
+    },
+    "promotionOutcomes": [
+      "accept"
+    ]
+  },
+  "maxEvaluatorCalls": 8,
+  "maxWallSeconds": 180
+}

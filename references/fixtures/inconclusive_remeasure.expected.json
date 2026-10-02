@@ -1,0 +1,84 @@
+{
+  "attemptIds": [
+    "a1",
+    "a2",
+    "a3",
+    "a4"
+  ],
+  "currentCandidate": {
+    "id": "c1",
+    "mode": "real"
+  },
+  "eventIds": [
+    "e1",
+    "e2",
+    "e3",
+    "e4",
+    "e5",
+    "e6",
+    "e7",
+    "e8",
+    "e9",
+    "e10",
+    "e11"
+  ],
+  "experiment": null,
+  "experimentIds": [
+    "x1"
+  ],
+  "history": [
+    {
+      "activeAttempt": null,
+      "artifacts": [
+        {
+          "path": "experiments/x1/a1/output.json",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "path": "experiments/x1/a2/output.json",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "path": "experiments/x1/a3/output.json",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "path": "experiments/x1/a4/output.json",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ],
+      "buildRevision": 1,
+      "builtRevision": 1,
+      "candidateId": "c1",
+      "experimentId": "x1",
+      "lastOutcome": "accept",
+      "mode": "real",
+      "parentId": "baseline",
+      "promoted": true,
+      "stage": null
+    }
+  ],
+  "schemaVersion": 2,
+  "seq": 11,
+  "workflow": {
+    "buildStage": "build",
+    "edges": {
+      "build": {
+        "built": "verify"
+      },
+      "measure": {
+        "accept": null,
+        "inconclusive": "measure",
+        "reject": null
+      },
+      "verify": {
+        "pass": "measure",
+        "reject": "build"
+      }
+    },
+    "initialStage": "build",
+    "promotionOutcomes": [
+      "accept"
+    ]
+  }
+}

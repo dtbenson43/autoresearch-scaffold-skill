@@ -1,0 +1,1 @@
+Use trusted local fixtures only; agent backend unavailable. Do not modify frozen evaluator, baseline, configuration or RESEARCH.md after initialization. Workers have no authority over observations or journal. New evaluator requires a new cohort. Do not run unattended research. See RUNTIME.md for limitations.

@@ -1,0 +1,1 @@
+{"v":2,"v":2,"seq":1,"id":"e1","type":"initialized","workflow":{"initialStage":"build","buildStage":"build","edges":{"build":{"built":"verify"},"verify":{"reject":"build","pass":"measure"},"measure":{"inconclusive":"measure","accept":null,"reject":null}},"promotionOutcomes":["accept"]},"baseline":{"id":"baseline","mode":"real"}}

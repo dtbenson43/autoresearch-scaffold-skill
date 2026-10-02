@@ -1,0 +1,8 @@
+{"v":2,"seq":1,"id":"e1","type":"initialized","workflow":{"initialStage":"build","buildStage":"build","edges":{"build":{"built":"verify"},"verify":{"reject":"build","pass":"measure"},"measure":{"inconclusive":"measure","accept":null,"reject":null}},"promotionOutcomes":["accept"]},"baseline":{"id":"baseline","mode":"real"}}
+{"v":2,"seq":2,"id":"e2","type":"experiment_started","experimentId":"x1","candidateId":"c1","parentId":"baseline","mode":"real"}
+{"v":2,"seq":3,"id":"e3","type":"stage_started","experimentId":"x1","stage":"build","attemptId":"a1","buildRevision":1}
+{"v":2,"seq":4,"id":"e4","type":"stage_completed","experimentId":"x1","stage":"build","attemptId":"a1","buildRevision":1,"outcome":"built","nextStage":"verify","promote":false,"artifacts":[{"path":"experiments/x1/a1/output.json","sha256":"0000000000000000000000000000000000000000000000000000000000000000"}]}
+{"v":2,"seq":5,"id":"e5","type":"stage_started","experimentId":"x1","stage":"verify","attemptId":"a2","buildRevision":1}
+{"v":2,"seq":6,"id":"e6","type":"stage_completed","experimentId":"x1","stage":"verify","attemptId":"a2","buildRevision":1,"outcome":"reject","nextStage":"build","promote":false,"artifacts":[{"path":"experiments/x1/a2/output.json","sha256":"0000000000000000000000000000000000000000000000000000000000000000"}]}
+{"v":2,"seq":7,"id":"e7","type":"stage_started","experimentId":"x1","stage":"build","attemptId":"a3","buildRevision":2}
+{"v":2,"seq":8,"id":"e8","type":"stage_completed","experimentId":"x1","stage":"build","attemptId":"a3","buildRevision":2,"outcome":"built","nextStage":"verify","promote":false,"artifacts":[{"path":"experiments/x1/a3/output.json","sha256":"0000000000000000000000000000000000000000000000000000000000000000"}]}
